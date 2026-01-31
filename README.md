@@ -2,7 +2,7 @@
 
 ![saas](./public/saas.png)
 
-Supabase OTP + Stripe Checkout (Minimal)
+[Supabase](https://supabase.com) OTP + Stripe Checkout (Minimal)
 
 ## Flow
 
@@ -32,9 +32,6 @@ cd saas
 
 # Install CLI (npm)
 npm i -g supabase
-
-# Initialize project (once)
-supabase init
 
 # Start local stack
 supabase start
