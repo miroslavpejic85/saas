@@ -1,0 +1,80 @@
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: system-ui, Arial, sans-serif;
+    background: #0b1220;
+    color: #e7eefc;
+    margin: 0;
+}
+
+.container {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 32px 16px;
+}
+
+h1 {
+    font-size: 28px;
+    margin-bottom: 8px;
+}
+
+p {
+    opacity: 0.9;
+}
+
+a,
+a:visited {
+    color: #ffffff;
+}
+
+.card {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 18px;
+    border-radius: 14px;
+    margin: 18px 0;
+}
+
+input {
+    width: 100%;
+    max-width: 100%;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(0, 0, 0, 0.25);
+    color: #fff;
+    margin: 8px 0 14px;
+}
+
+.btn {
+    display: inline-block;
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 0;
+    cursor: pointer;
+    text-decoration: none;
+    background: #4f7cff;
+    color: white;
+    margin-right: 8px;
+}
+
+.btn.secondary {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.status {
+    background: rgba(0, 0, 0, 0.35);
+    padding: 12px;
+    border-radius: 12px;
+    overflow: auto;
+}
+
+hr {
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    margin: 16px 0;
+}

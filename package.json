@@ -1,0 +1,26 @@
+{
+    "name": "supabase-stripe-nodejs-app",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "description": "Node.js + Supabase Auth (email OTP) + Stripe Checkout + protected page",
+    "main": "server.js",
+    "scripts": {
+        "dev": "node server.js",
+        "start": "node server.js",
+        "lint": "npx prettier --write ."
+    },
+    "dependencies": {
+        "@supabase/supabase-js": "^2.93.3",
+        "cookie-parser": "^1.4.7",
+        "dotenv": "^17.2.3",
+        "express": "^5.2.1",
+        "express-rate-limit": "^8.2.1",
+        "helmet": "^8.1.0",
+        "stripe": "^20.3.0",
+        "zod": "^4.3.6"
+    },
+    "devDependencies": {
+        "prettier": "^3.8.1"
+    }
+}

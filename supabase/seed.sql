@@ -1,0 +1,2 @@
+-- Optional seed data.
+-- This file exists because supabase/config.toml references it.

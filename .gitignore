@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+
+# Environment files (secrets)
+.env
+.env.*
+!.env.example
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Runtime
+*.pid
+*.seed
+*.pid.lock
+
+# Build output
+build/
+dist/
+coverage/
+
+# OS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# Supabase local CLI state
+supabase/.temp/
+supabase/.branches/
