@@ -2,7 +2,7 @@
 
 ![saas](./public/saas.png)
 
-[Supabase](https://supabase.com) OTP + Stripe Checkout (Minimal)
+**[Supabase](https://supabase.com)** OTP + Stripe Checkout (Minimal)
 
 ## Flow
 
@@ -21,7 +21,7 @@
 
 ---
 
-## Install & Start Supabase
+## Quick Start
 
 ```bash
 # clone this repo
@@ -38,12 +38,6 @@ supabase start
 supabase db reset
 ```
 
-Local URLs:
-
-- API: http://127.0.0.1:54321
-- Studio: http://127.0.0.1:54323
-- Mailpit inbox: http://127.0.0.1:54324
-
 ---
 
 ## Configure env
@@ -55,6 +49,18 @@ cp .env.example .env
 
 ---
 
+## Stripe webhook (local)
+
+```bash
+# Login to your stripe dashboard
+stripe login
+
+# Copy `whsec_...` → `.env` as `STRIPE_WEBHOOK_SECRET`
+stripe listen --events checkout.session.completed --forward-to localhost:3000/stripe/webhook
+```
+
+---
+
 ## Run the app
 
 ```bash
@@ -62,23 +68,10 @@ npm ci
 npm run dev
 ```
 
-Open: http://localhost:3000
+Local URLs:
 
----
-
-## Stripe webhook (local)
-
-```bash
-stripe login
-stripe listen --events checkout.session.completed --forward-to localhost:3000/stripe/webhook
-```
-
-Copy `whsec_...` → `.env` as `STRIPE_WEBHOOK_SECRET`.
-
----
-
-## DB
-
-`public.user_access` → stores `user_id` + `paid` boolean
+- App: http://localhost:3000
+- Mailpit: http://127.0.0.1:54324
+- Studio: http://127.0.0.1:54323
 
 ---
