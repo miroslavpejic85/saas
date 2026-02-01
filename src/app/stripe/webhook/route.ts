@@ -5,6 +5,7 @@ import { ENV } from '@/server/config/env';
 import { stripe } from '@/server/clients/stripe';
 import { supabaseAdmin } from '@/server/clients/supabase';
 import { upsertUserAccess } from '@/server/data/userAccess';
+import { jsonError, jsonOk } from '@/server/http/json';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -12,8 +13,8 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: Request) {
     const sig = request.headers.get('stripe-signature');
 
-    if (!ENV.STRIPE_WEBHOOK_SECRET) return new NextResponse('Webhook not configured', { status: 500 });
-    if (!sig) return new NextResponse('Missing Stripe-Signature header', { status: 400 });
+    if (!ENV.STRIPE_WEBHOOK_SECRET) return jsonError('Webhook not configured', 500);
+    if (!sig) return jsonError('Missing Stripe-Signature header', 400);
 
     const buf = Buffer.from(await request.arrayBuffer());
 
@@ -22,7 +23,7 @@ export async function POST(request: Request) {
         event = stripe.webhooks.constructEvent(buf, sig, ENV.STRIPE_WEBHOOK_SECRET);
     } catch (err) {
         const message = err instanceof Error ? err.message : 'Invalid webhook signature';
-        return new NextResponse(`Webhook Error: ${message}`, { status: 400 });
+        return jsonError(`Webhook Error: ${message}`, 400);
     }
 
     // Idempotency: ignore replayed events
@@ -35,11 +36,11 @@ export async function POST(request: Request) {
 
         if (existingError) {
             console.error('stripe_webhook_events lookup failed', existingError);
-            return new NextResponse('Webhook storage error', { status: 500 });
+            return jsonError('Webhook storage error', 500);
         }
 
         if (existing?.id) {
-            return NextResponse.json({ received: true, deduped: true });
+            return jsonOk({ received: true, deduped: true });
         }
 
         const { error: insertError } = await supabaseAdmin
@@ -49,13 +50,13 @@ export async function POST(request: Request) {
         if (insertError) {
             if (String((insertError as any).code) !== '23505') {
                 console.error('stripe_webhook_events insert failed', insertError);
-                return new NextResponse('Webhook storage error', { status: 500 });
+                return jsonError('Webhook storage error', 500);
             }
-            return NextResponse.json({ received: true, deduped: true });
+            return jsonOk({ received: true, deduped: true });
         }
     } catch (e) {
         console.error('stripe_webhook_events unexpected error', e);
-        return new NextResponse('Webhook storage error', { status: 500 });
+        return jsonError('Webhook storage error', 500);
     }
 
     if (event.type === 'checkout.session.completed') {
@@ -72,5 +73,5 @@ export async function POST(request: Request) {
         }
     }
 
-    return NextResponse.json({ received: true });
+    return jsonOk({ received: true });
 }

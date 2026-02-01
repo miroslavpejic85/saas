@@ -1,23 +1,16 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { z } from 'zod';
 
 import { supabaseAnon } from '@/server/clients/supabase';
-
-const SendOtpSchema = z.object({
-    email: z.string().trim().email('Invalid email'),
-});
+import { sendOtpRequestSchema } from '@/schemas/requests';
+import { parseJsonBody } from '@/server/http/parseJsonBody';
+import { jsonError } from '@/server/http/json';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
-    const body = await request.json().catch(() => null);
-    const parsed = SendOtpSchema.safeParse(body);
-
-    if (!parsed.success) {
-        const message = parsed.error.issues?.[0]?.message || 'Invalid body';
-        return NextResponse.json({ error: message }, { status: 400 });
-    }
+    const parsed = await parseJsonBody(request, sendOtpRequestSchema);
+    if (!parsed.ok) return parsed.response;
 
     const origin = request.nextUrl.origin;
 
@@ -28,6 +21,6 @@ export async function POST(request: NextRequest) {
         },
     });
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+    if (error) return jsonError(error.message, 400);
     return NextResponse.json({ ok: true });
 }

@@ -1,93 +1,97 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import Link from 'next/link';
 
-type ApiError = Error & { status?: number; data?: unknown };
-
-function safeJsonParse(text: string): unknown {
-    try {
-        return JSON.parse(text);
-    } catch {
-        return null;
-    }
-}
-
-async function apiGet(url: string): Promise<any> {
-    const res = await fetch(url, {
-        credentials: 'same-origin',
-        cache: 'no-store',
-    });
-
-    const text = await res.text();
-    const data = (safeJsonParse(text) as any) ?? { raw: text };
-
-    if (!res.ok) {
-        const message = data && data.error ? data.error : `Request failed (${res.status})`;
-        const err: ApiError = new Error(message);
-        err.status = res.status;
-        err.data = data;
-        throw err;
-    }
-
-    return data;
-}
+import { useRequirePaid } from '@/hooks/useRequirePaid';
+import { Button } from '@/components/ui/Button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export default function ProtectedPage() {
-    const [checking, setChecking] = useState<boolean>(true);
-    const [error, setError] = useState<string>('');
-
-    useEffect(() => {
-        (async () => {
-            try {
-                const me = await apiGet('/api/me');
-                if (!me.paid) {
-                    window.location.href = '/pricing';
-                    return;
-                }
-                setChecking(false);
-            } catch (e) {
-                const err = e as ApiError;
-                if (err && err.status === 401) {
-                    window.location.href = '/login';
-                    return;
-                }
-                setError(err?.message || 'Server error');
-                setChecking(false);
-            }
-        })();
-    }, []);
+    const { checking, error } = useRequirePaid({
+        unauthorizedRedirectTo: '/login',
+        notPaidRedirectTo: '/pricing',
+    });
 
     if (checking) {
         return (
-            <main className="container">
-                <h1>Protected Page</h1>
-                <pre className="status">Checking access...</pre>
+            <main className="mx-auto flex min-h-screen w-full max-w-2xl flex-col gap-6 px-4 py-10">
+                <div className="space-y-1">
+                    <h1 className="text-3xl font-semibold tracking-tight">Protected Page</h1>
+                    <p className="text-sm text-muted-foreground">Checking access…</p>
+                </div>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Loading</CardTitle>
+                        <CardDescription>Verifying your session and access.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex flex-wrap gap-2">
+                        <Button asChild variant="outline">
+                            <Link href="/">Home</Link>
+                        </Button>
+                    </CardContent>
+                </Card>
+
+                <Alert>
+                    <AlertTitle>Status</AlertTitle>
+                    <AlertDescription>Checking access…</AlertDescription>
+                </Alert>
             </main>
         );
     }
 
     if (error) {
         return (
-            <main className="container">
-                <h1>Protected Page</h1>
-                <pre className="status">{error}</pre>
+            <main className="mx-auto flex min-h-screen w-full max-w-2xl flex-col gap-6 px-4 py-10">
+                <div className="space-y-1">
+                    <h1 className="text-3xl font-semibold tracking-tight">Protected Page</h1>
+                    <p className="text-sm text-muted-foreground">Access check failed.</p>
+                </div>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Error</CardTitle>
+                        <CardDescription>Something went wrong while verifying access.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                        <Button asChild variant="outline">
+                            <Link href="/">Home</Link>
+                        </Button>
+                    </CardContent>
+                </Card>
+
+                <Alert variant="destructive">
+                    <AlertTitle>Details</AlertTitle>
+                    <AlertDescription>
+                        <pre className="whitespace-pre-wrap font-mono text-xs">{error}</pre>
+                    </AlertDescription>
+                </Alert>
             </main>
         );
     }
 
     return (
-        <main className="container">
-            <h1>Protected Page</h1>
-            <p>If you can see this, you&apos;re paid.</p>
-
-            <div className="card">
-                <h2>Members area</h2>
-                <p>Put your premium content here (tools, links, onboarding steps, docs, etc.).</p>
+        <main className="mx-auto flex min-h-screen w-full max-w-2xl flex-col gap-6 px-4 py-10">
+            <div className="space-y-1">
+                <h1 className="text-3xl font-semibold tracking-tight">Protected Page</h1>
+                <p className="text-sm text-muted-foreground">If you can see this, you&apos;re paid.</p>
             </div>
 
-            <p>
-                <a href="/">Home</a>
-            </p>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Members area</CardTitle>
+                    <CardDescription>Put your premium content here.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-2 text-sm text-muted-foreground">
+                    <p>Tools, links, onboarding steps, docs, etc.</p>
+                    <div className="flex flex-wrap gap-2">
+                        <Button asChild variant="outline">
+                            <Link href="/">Home</Link>
+                        </Button>
+                    </div>
+                </CardContent>
+            </Card>
         </main>
     );
 }

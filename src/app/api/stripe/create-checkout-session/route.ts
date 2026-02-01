@@ -6,15 +6,21 @@ import { ENV } from '@/server/config/env';
 import { getUserFromRequest } from '@/server/auth/session';
 import { ACCESS_TOKEN_COOKIE_NAME, COOKIE_OPTIONS, REFRESH_TOKEN_COOKIE_NAME } from '@/server/config/cookies';
 import { upsertUserAccess } from '@/server/data/userAccess';
+import { createCheckoutSessionRequestSchema } from '@/schemas/requests';
+import { parseJsonBody } from '@/server/http/parseJsonBody';
+import { jsonError } from '@/server/http/json';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
+    const parsed = await parseJsonBody(request, createCheckoutSessionRequestSchema, { fallback: {} });
+    if (!parsed.ok) return parsed.response;
+
     const { user, refreshedSession } = await getUserFromRequest(request);
 
     if (!user) {
-        return NextResponse.json({ error: 'Not logged in' }, { status: 401 });
+        return jsonError('Not logged in', 401);
     }
 
     const origin = request.nextUrl.origin;
@@ -37,11 +43,9 @@ export async function POST(request: NextRequest) {
         const unitAmount = Number(ENV.STRIPE_UNIT_AMOUNT);
 
         if (!Number.isFinite(unitAmount) || unitAmount <= 0) {
-            return NextResponse.json(
-                {
-                    error: 'Invalid STRIPE_UNIT_AMOUNT. Set STRIPE_PRICE_ID or provide STRIPE_UNIT_AMOUNT as an integer (in cents).',
-                },
-                { status: 400 }
+            return jsonError(
+                'Invalid STRIPE_UNIT_AMOUNT. Set STRIPE_PRICE_ID or provide STRIPE_UNIT_AMOUNT as an integer (in cents).',
+                400
             );
         }
 
@@ -57,19 +61,14 @@ export async function POST(request: NextRequest) {
             const intervalCount = intervalCountRaw ? Number(intervalCountRaw) : undefined;
 
             if (!interval) {
-                return NextResponse.json(
-                    {
-                        error: 'Missing STRIPE_RECURRING_INTERVAL for subscription mode. Set STRIPE_PRICE_ID or set STRIPE_RECURRING_INTERVAL=month|year.',
-                    },
-                    { status: 400 }
+                return jsonError(
+                    'Missing STRIPE_RECURRING_INTERVAL for subscription mode. Set STRIPE_PRICE_ID or set STRIPE_RECURRING_INTERVAL=month|year.',
+                    400
                 );
             }
 
             if (intervalCount !== undefined && (!Number.isFinite(intervalCount) || intervalCount <= 0)) {
-                return NextResponse.json(
-                    { error: 'Invalid STRIPE_RECURRING_INTERVAL_COUNT. Must be a positive integer.' },
-                    { status: 400 }
-                );
+                return jsonError('Invalid STRIPE_RECURRING_INTERVAL_COUNT. Must be a positive integer.', 400);
             }
 
             priceData.recurring = {
@@ -86,7 +85,7 @@ export async function POST(request: NextRequest) {
         session = await stripe.checkout.sessions.create(checkoutParams);
     } catch (e) {
         const message = e instanceof Error ? e.message : 'Stripe error';
-        return NextResponse.json({ error: message }, { status: 400 });
+        return jsonError(message, 400);
     }
 
     const { error } = await upsertUserAccess(user.id, { stripe_session_id: session.id });

@@ -1,122 +1,84 @@
 'use client';
 
-import { useState } from 'react';
+import Link from 'next/link';
 
-function safeJsonParse(text: string): unknown {
-    try {
-        return JSON.parse(text);
-    } catch {
-        return null;
-    }
-}
-
-async function apiPost(url: string, body: unknown): Promise<any> {
-    const res = await fetch(url, {
-        method: 'POST',
-        credentials: 'same-origin',
-        cache: 'no-store',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body ?? {}),
-    });
-
-    const text = await res.text();
-    const data = (safeJsonParse(text) as any) ?? { raw: text };
-
-    if (!res.ok) {
-        const message = data && data.error ? data.error : `Request failed (${res.status})`;
-        throw new Error(message);
-    }
-
-    return data;
-}
+import { useOtpLogin } from '@/hooks/useOtpLogin';
+import { Button } from '@/components/ui/Button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
 
 export default function LoginPage() {
-    const [email, setEmail] = useState<string>('');
-    const [code, setCode] = useState<string>('');
-    const [out, setOut] = useState<string>('');
+    const { email, setEmail, code, setCode, status, busy, sendCode, verifyAndLogin, logout } = useOtpLogin({
+        redirectTo: '/',
+    });
 
     return (
-        <main className="container">
-            <h1>Login</h1>
-            <p>Enter your email. You&apos;ll receive a confirmation code.</p>
-
-            <div className="card">
-                <label>Email</label>
-                <input
-                    id="email"
-                    type="email"
-                    placeholder="you@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                />
-
-                <button
-                    className="btn"
-                    onClick={async () => {
-                        setOut('');
-                        try {
-                            await apiPost('/api/auth/send-otp', { email: email.trim() });
-                            setOut('OTP sent. Check your email.');
-                        } catch (e) {
-                            setOut(e instanceof Error ? e.message : String(e));
-                        }
-                    }}
-                >
-                    Send code
-                </button>
-
-                <hr />
-
-                <label>Code</label>
-                <input
-                    id="code"
-                    type="text"
-                    placeholder="123456"
-                    value={code}
-                    onChange={(e) => setCode(e.target.value)}
-                />
-
-                <button
-                    className="btn"
-                    onClick={async () => {
-                        setOut('');
-                        try {
-                            const data = await apiPost('/api/auth/verify-otp', {
-                                email: email.trim(),
-                                token: code.trim(),
-                            });
-                            setOut(`Logged in as: ${data.user.email}\nRedirecting to home...`);
-                            setTimeout(() => {
-                                window.location.href = '/';
-                            }, 600);
-                        } catch (e) {
-                            setOut(e instanceof Error ? e.message : String(e));
-                        }
-                    }}
-                >
-                    Verify &amp; Login
-                </button>
-
-                <button
-                    className="btn secondary"
-                    onClick={async () => {
-                        try {
-                            await apiPost('/api/auth/logout', {});
-                            setOut('Logged out.');
-                        } catch (e) {
-                            setOut(e instanceof Error ? e.message : String(e));
-                        }
-                    }}
-                >
-                    Logout
-                </button>
+        <main className="mx-auto flex min-h-screen w-full max-w-2xl flex-col gap-6 px-4 py-10">
+            <div className="space-y-1">
+                <h1 className="text-3xl font-semibold tracking-tight">Login</h1>
+                <p className="text-sm text-muted-foreground">
+                    Enter your email. You&apos;ll receive a confirmation code.
+                </p>
             </div>
 
-            <pre className="status">{out}</pre>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Email OTP</CardTitle>
+                    <CardDescription>Send a one-time code and verify.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="email">Email</Label>
+                        <Input
+                            id="email"
+                            type="email"
+                            placeholder="you@example.com"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                        />
+                        <Button onClick={sendCode} disabled={busy || !email.trim()}>
+                            Send code
+                        </Button>
+                    </div>
 
-            <p>
-                <a href="/">Home</a>
-            </p>
+                    <Separator />
+
+                    <div className="space-y-2">
+                        <Label htmlFor="code">Code</Label>
+                        <Input
+                            id="code"
+                            type="text"
+                            placeholder="123456"
+                            value={code}
+                            onChange={(e) => setCode(e.target.value)}
+                        />
+
+                        <div className="flex flex-wrap gap-2">
+                            <Button onClick={verifyAndLogin} disabled={busy || !email.trim() || !code.trim()}>
+                                Verify &amp; Login
+                            </Button>
+                            <Button variant="secondary" onClick={logout} disabled={busy}>
+                                Logout
+                            </Button>
+                            <Button asChild variant="outline" disabled={busy}>
+                                <Link href="/">Home</Link>
+                            </Button>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+
+            {status ? (
+                <Alert>
+                    <AlertTitle>Status</AlertTitle>
+                    <AlertDescription>
+                        <pre className="whitespace-pre-wrap font-mono text-xs">{status}</pre>
+                    </AlertDescription>
+                </Alert>
+            ) : null}
         </main>
     );
 }

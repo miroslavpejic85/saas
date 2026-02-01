@@ -1,25 +1,17 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { z } from 'zod';
 
 import { supabaseAnon } from '@/server/clients/supabase';
 import { ACCESS_TOKEN_COOKIE_NAME, COOKIE_OPTIONS, REFRESH_TOKEN_COOKIE_NAME } from '@/server/config/cookies';
-
-const VerifyOtpSchema = z.object({
-    email: z.string().trim().email('Invalid email'),
-    token: z.string().trim().min(1, 'Missing token'),
-});
+import { verifyOtpRequestSchema } from '@/schemas/requests';
+import { parseJsonBody } from '@/server/http/parseJsonBody';
+import { jsonError } from '@/server/http/json';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
-    const body = await request.json().catch(() => null);
-    const parsed = VerifyOtpSchema.safeParse(body);
-
-    if (!parsed.success) {
-        const message = parsed.error.issues?.[0]?.message || 'Invalid body';
-        return NextResponse.json({ error: message }, { status: 400 });
-    }
+    const parsed = await parseJsonBody(request, verifyOtpRequestSchema);
+    if (!parsed.ok) return parsed.response;
 
     const { data, error } = await supabaseAnon.auth.verifyOtp({
         email: parsed.data.email,
@@ -27,8 +19,8 @@ export async function POST(request: NextRequest) {
         type: 'email',
     });
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-    if (!data?.session?.access_token) return NextResponse.json({ error: 'No session returned' }, { status: 400 });
+    if (error) return jsonError(error.message, 400);
+    if (!data?.session?.access_token) return jsonError('No session returned', 400);
 
     const res = NextResponse.json({ ok: true, user: data.user });
 

@@ -72,21 +72,7 @@ pnpm run dev
 Local URLs:
 
 - App: http://localhost:3000
-- Mailpit: http://127.0.0.1:54324
+- Mailpit inbox: http://127.0.0.1:54324
 - Supabase Studio: http://127.0.0.1:54323
 
-## Notes
-
-- Routes: `/login`, `/pricing`, `/success`, `/protected`
-- UI routes are under `src/app/*`.
-- API endpoints are Route Handlers under `src/app/api/*`.
-- Stripe webhook endpoint is `POST /stripe/webhook`.
-- Legacy `.html` routes are redirected via Next 16 proxy convention in `src/proxy.ts`.
-
-## Project structure
-
-- `src/app/*`: pages + layouts (React)
-- `src/app/api/*`: API route handlers
-- `src/app/stripe/webhook/route.ts`: Stripe webhook handler
-- `src/server/*`: server-only helpers (Supabase/Stripe clients, session helpers)
-- `supabase/migrations/*`: database schema
+---

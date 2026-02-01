@@ -1,84 +1,49 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import Link from 'next/link';
 
-function safeJsonParse(text: string): unknown {
-    try {
-        return JSON.parse(text);
-    } catch {
-        return null;
-    }
-}
-
-async function apiGet(url: string): Promise<any> {
-    const res = await fetch(url, {
-        credentials: 'same-origin',
-        cache: 'no-store',
-    });
-
-    const text = await res.text();
-    const data = (safeJsonParse(text) as any) ?? { raw: text };
-
-    if (!res.ok) {
-        const message = data && data.error ? data.error : `Request failed (${res.status})`;
-        throw new Error(message);
-    }
-
-    return data;
-}
-
-function sleep(ms: number): Promise<void> {
-    return new Promise((r) => setTimeout(r, ms));
-}
+import { usePaymentConfirmation } from '@/hooks/usePaymentConfirmation';
+import { Button } from '@/components/ui/Button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export default function SuccessPage() {
-    const [out, setOut] = useState<string>('');
-
-    useEffect(() => {
-        (async () => {
-            setOut('Checking payment status...');
-
-            for (let i = 0; i < 20; i++) {
-                try {
-                    const me = await apiGet('/api/me');
-                    setOut(JSON.stringify(me, null, 2));
-                    if (me.paid) {
-                        setOut('Paid confirmed. Redirecting to protected...');
-                        setTimeout(() => {
-                            window.location.href = '/protected';
-                        }, 600);
-                        return;
-                    }
-                } catch {
-                    setOut('Not logged in.');
-                    return;
-                }
-
-                await sleep(1500);
-            }
-
-            setOut(
-                (prev) =>
-                    prev + '\n\nStill waiting for webhook. If this never updates, your Stripe webhook may be failing.'
-            );
-        })();
-    }, []);
+    const { status } = usePaymentConfirmation({
+        paidRedirectTo: '/protected',
+    });
 
     return (
-        <main className="container">
-            <h1>Payment successful</h1>
-            <p>It can take a moment for webhook to mark you as paid.</p>
-
-            <div className="card">
-                <a className="btn" href="/protected">
-                    Go to protected page
-                </a>
-                <a className="btn secondary" href="/">
-                    Home
-                </a>
+        <main className="mx-auto flex min-h-screen w-full max-w-2xl flex-col gap-6 px-4 py-10">
+            <div className="space-y-1">
+                <h1 className="text-3xl font-semibold tracking-tight">Payment successful</h1>
+                <p className="text-sm text-muted-foreground">
+                    It can take a moment for the webhook to mark you as paid.
+                </p>
             </div>
 
-            <pre className="status">{out}</pre>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Next steps</CardTitle>
+                    <CardDescription>Head to the protected page once access updates.</CardDescription>
+                </CardHeader>
+                <CardContent className="flex flex-wrap gap-2">
+                    <Button asChild>
+                        <Link href="/protected">Go to protected page</Link>
+                    </Button>
+                    <Button asChild variant="secondary">
+                        <Link href="/">Home</Link>
+                    </Button>
+                </CardContent>
+            </Card>
+
+            {status ? (
+                <Alert>
+                    <AlertTitle>Status</AlertTitle>
+                    <AlertDescription>
+                        <pre className="whitespace-pre-wrap font-mono text-xs">{status}</pre>
+                    </AlertDescription>
+                </Alert>
+            ) : null}
         </main>
     );
 }

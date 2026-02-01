@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 
+import { Toaster } from '@/components/ui/sonner';
+
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -15,7 +17,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: ReactNode }) {
     return (
         <html lang="en" suppressHydrationWarning>
-            <body>{children}</body>
+            <body suppressHydrationWarning>
+                {children}
+                <Toaster position="top-right" />
+            </body>
         </html>
     );
 }
