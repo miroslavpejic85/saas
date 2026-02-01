@@ -2,9 +2,7 @@ import type { ZodType } from 'zod';
 
 import { jsonError } from '@/server/http/json';
 
-export type ParseJsonBodyResult<T> =
-    | { ok: true; data: T }
-    | { ok: false; response: ReturnType<typeof jsonError> };
+export type ParseJsonBodyResult<T> = { ok: true; data: T } | { ok: false; response: ReturnType<typeof jsonError> };
 
 export async function parseJsonBody<T>(
     request: Request,

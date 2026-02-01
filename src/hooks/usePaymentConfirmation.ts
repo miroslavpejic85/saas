@@ -23,49 +23,55 @@ export function usePaymentConfirmation(options: UsePaymentConfirmationOptions = 
 
     const [status, setStatus] = useState<string>('');
 
-    useAsyncEffect(async (signal) => {
-        setStatus('Checking payment status...');
+    useAsyncEffect(
+        async (signal) => {
+            setStatus('Checking payment status...');
 
-        for (let i = 0; i < maxAttempts; i++) {
-            if (signal.aborted) return;
-
-            try {
-                const me = await apiGet<MeResponse>('/api/me', meResponseSchema);
+            for (let i = 0; i < maxAttempts; i++) {
                 if (signal.aborted) return;
 
-                setStatus(JSON.stringify(me, null, 2));
+                try {
+                    const me = await apiGet<MeResponse>('/api/me', meResponseSchema);
+                    if (signal.aborted) return;
 
-                if (me.paid) {
-                    setStatus('Paid confirmed. Redirecting to protected...');
+                    setStatus(JSON.stringify(me, null, 2));
 
-                    if (!didToastPaidRef.current) {
-                        didToastPaidRef.current = true;
-                        toast.success('Payment confirmed. Redirecting…');
+                    if (me.paid) {
+                        setStatus('Paid confirmed. Redirecting to protected...');
+
+                        if (!didToastPaidRef.current) {
+                            didToastPaidRef.current = true;
+                            toast.success('Payment confirmed. Redirecting…');
+                        }
+
+                        setTimeout(() => {
+                            replaceHref(router, paidRedirectTo);
+                        }, paidRedirectDelayMs);
+                        return;
+                    }
+                } catch {
+                    if (signal.aborted) return;
+                    setStatus('Not logged in.');
+
+                    if (!didToastNotLoggedInRef.current) {
+                        didToastNotLoggedInRef.current = true;
+                        toast.error('Not logged in.');
                     }
 
-                    setTimeout(() => {
-                        replaceHref(router, paidRedirectTo);
-                    }, paidRedirectDelayMs);
                     return;
                 }
-            } catch {
-                if (signal.aborted) return;
-                setStatus('Not logged in.');
 
-                if (!didToastNotLoggedInRef.current) {
-                    didToastNotLoggedInRef.current = true;
-                    toast.error('Not logged in.');
-                }
-
-                return;
+                await sleep(intervalMs);
             }
 
-            await sleep(intervalMs);
-        }
-
-        if (signal.aborted) return;
-        setStatus((prev) => prev + '\n\nStill waiting for webhook. If this never updates, your Stripe webhook may be failing.');
-    }, [intervalMs, maxAttempts, paidRedirectDelayMs, paidRedirectTo, router]);
+            if (signal.aborted) return;
+            setStatus(
+                (prev) =>
+                    prev + '\n\nStill waiting for webhook. If this never updates, your Stripe webhook may be failing.'
+            );
+        },
+        [intervalMs, maxAttempts, paidRedirectDelayMs, paidRedirectTo, router]
+    );
 
     return { status };
 }

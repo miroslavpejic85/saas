@@ -6,7 +6,9 @@ export type ApiError = Error & {
 };
 
 function isZodSchema(value: unknown): value is ZodType<unknown> {
-    return !!value && typeof value === 'object' && 'parse' in (value as any) && typeof (value as any).parse === 'function';
+    return (
+        !!value && typeof value === 'object' && 'parse' in (value as any) && typeof (value as any).parse === 'function'
+    );
 }
 
 function safeJsonParse(text: string): unknown {

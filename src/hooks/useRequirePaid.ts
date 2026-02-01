@@ -18,30 +18,33 @@ export function useRequirePaid(options: UseRequirePaidOptions = {}) {
     const [checking, setChecking] = useState<boolean>(true);
     const [error, setError] = useState<string>('');
 
-    useAsyncEffect(async (signal) => {
-        try {
-            const me = await apiGet<MeResponse>('/api/me', meResponseSchema);
-            if (signal.aborted) return;
+    useAsyncEffect(
+        async (signal) => {
+            try {
+                const me = await apiGet<MeResponse>('/api/me', meResponseSchema);
+                if (signal.aborted) return;
 
-            if (!me.paid) {
-                replaceHref(router, notPaidRedirectTo);
-                return;
+                if (!me.paid) {
+                    replaceHref(router, notPaidRedirectTo);
+                    return;
+                }
+
+                setChecking(false);
+            } catch (e) {
+                if (signal.aborted) return;
+
+                const err = e as ApiError;
+                if (err?.status === 401) {
+                    replaceHref(router, unauthorizedRedirectTo);
+                    return;
+                }
+
+                setError(err?.message || 'Server error');
+                setChecking(false);
             }
-
-            setChecking(false);
-        } catch (e) {
-            if (signal.aborted) return;
-
-            const err = e as ApiError;
-            if (err?.status === 401) {
-                replaceHref(router, unauthorizedRedirectTo);
-                return;
-            }
-
-            setError(err?.message || 'Server error');
-            setChecking(false);
-        }
-    }, [notPaidRedirectTo, unauthorizedRedirectTo, router]);
+        },
+        [notPaidRedirectTo, unauthorizedRedirectTo, router]
+    );
 
     return { checking, error };
 }

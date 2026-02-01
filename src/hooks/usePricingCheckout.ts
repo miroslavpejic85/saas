@@ -16,22 +16,25 @@ export function usePricingCheckout() {
     const [status, setStatus] = useState<string>('');
     const [busy, setBusy] = useState<boolean>(false);
 
-    useAsyncEffect(async (signal) => {
-        try {
-            const me = await apiGet<MeResponse>('/api/me', meResponseSchema);
-            if (signal.aborted) return;
+    useAsyncEffect(
+        async (signal) => {
+            try {
+                const me = await apiGet<MeResponse>('/api/me', meResponseSchema);
+                if (signal.aborted) return;
 
-            if (me.paid) {
-                replaceHref(router, '/protected');
-                return;
+                if (me.paid) {
+                    replaceHref(router, '/protected');
+                    return;
+                }
+
+                setStatus(`Logged in as ${me.user.email}. Ready to pay.`);
+            } catch {
+                if (signal.aborted) return;
+                setStatus('Login required to pay.');
             }
-
-            setStatus(`Logged in as ${me.user.email}. Ready to pay.`);
-        } catch {
-            if (signal.aborted) return;
-            setStatus('Login required to pay.');
-        }
-    }, [router]);
+        },
+        [router]
+    );
 
     const pay = useCallback(async () => {
         setStatus('');

@@ -43,8 +43,8 @@ export function useOtpLogin(options: UseOtpLoginOptions = {}) {
             const data = await apiPost<VerifyOtpResponse>(
                 '/api/auth/verify-otp',
                 {
-                email: email.trim(),
-                token: code.trim(),
+                    email: email.trim(),
+                    token: code.trim(),
                 },
                 verifyOtpResponseSchema
             );

@@ -2,10 +2,7 @@
 
 import { useEffect, useRef, type DependencyList } from 'react';
 
-export function useAsyncEffect(
-    effect: (signal: AbortSignal) => Promise<void> | void,
-    deps: DependencyList
-): void {
+export function useAsyncEffect(effect: (signal: AbortSignal) => Promise<void> | void, deps: DependencyList): void {
     const effectRef = useRef(effect);
     effectRef.current = effect;
 
