@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { MiroTalkSupportWidget } from '@/app/protected/_components/MiroTalkSupportWidget';
 
 export default function ProtectedPage() {
     return (
@@ -33,6 +34,7 @@ export default function ProtectedPage() {
                     </div>
                 </CardContent>
             </Card>
+            <MiroTalkSupportWidget />
         </main>
     );
 }
