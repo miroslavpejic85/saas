@@ -23,6 +23,10 @@ pnpm-debug.log*
 build/
 dist/
 coverage/
+/.next/
+/.turbo/
+out/
+.vercel/
 
 # OS
 .DS_Store
