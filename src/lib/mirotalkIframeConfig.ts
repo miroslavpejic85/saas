@@ -1,13 +1,6 @@
 import { z } from 'zod';
 
-function cleanOptionalEnvString(value: unknown): string | undefined {
-    if (value === undefined || value === null) return undefined;
-    if (typeof value !== 'string') return String(value);
-    const trimmed = value.trim();
-    if (!trimmed) return undefined;
-    const unquoted = trimmed.replace(/^['"](.*)['"]$/, '$1').trim();
-    return unquoted || undefined;
-}
+import { cleanOptionalEnvString } from '@/lib/envParsers';
 
 const MiroTalkIframePublicEnvSchema = z
     .object({
