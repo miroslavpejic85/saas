@@ -19,7 +19,10 @@ export default function ProtectedPage() {
                 <CardContent className="space-y-2 text-sm text-muted-foreground">
                     <p>Tools, links, onboarding steps, docs, etc.</p>
                     <div className="flex flex-wrap gap-2">
-                        <Button asChild>
+                        <Button asChild variant="secondary">
+                            <Link href="/protected/mirotalk">MiroTalk</Link>
+                        </Button>
+                        <Button asChild variant="secondary">
                             <Link href="/protected/account">Account</Link>
                         </Button>
                         <Button asChild variant="secondary">
