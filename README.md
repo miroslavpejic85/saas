@@ -2,7 +2,7 @@
 
 ![saas](./public/saas.png)
 
-**[Supabase](https://supabase.com)** OTP + Stripe Checkout (Minimal)
+**[Supabase](https://supabase.com)** OTP + **[Stripe](https://stripe.com)** Checkout (Minimal)
 
 ## Flow
 
@@ -56,6 +56,10 @@ Checkout configuration:
 ## Stripe webhook (local)
 
 ```bash
+# Install (eg MAC)
+brew install stripe/stripe-cli/stripe
+
+# Login
 stripe login
 
 # Copy `whsec_...` into `.env` as `STRIPE_WEBHOOK_SECRET`
@@ -65,8 +69,9 @@ stripe listen --events checkout.session.completed --forward-to localhost:3000/st
 ## Run the app
 
 ```bash
+pnpm add -g pnpm
 pnpm install
-pnpm run dev
+pnpm dev
 ```
 
 Local URLs:
