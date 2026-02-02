@@ -100,8 +100,8 @@ export function MiroTalkSupportWidget() {
                             {scriptStatus === 'idle'
                                 ? 'loading (or blocked)'
                                 : scriptStatus === 'loaded'
-                                  ? 'loaded'
-                                  : 'error loading script'}
+                                    ? 'loaded'
+                                    : 'error loading script'}
                         </span>
                     </div>
                     {scriptStatus === 'error' ? (

@@ -6,9 +6,9 @@ export type ApiError = Error & {
 };
 
 function isZodSchema(value: unknown): value is ZodType<unknown> {
-    return (
-        !!value && typeof value === 'object' && 'parse' in (value as any) && typeof (value as any).parse === 'function'
-    );
+    if (!value || typeof value !== 'object') return false;
+    const maybe = value as { parse?: unknown };
+    return typeof maybe.parse === 'function';
 }
 
 function safeJsonParse(text: string): unknown {
@@ -20,8 +20,9 @@ function safeJsonParse(text: string): unknown {
 }
 
 function getErrorMessage(data: unknown, status: number): string {
-    if (data && typeof data === 'object' && 'error' in data && typeof (data as any).error === 'string') {
-        return (data as any).error;
+    if (data && typeof data === 'object') {
+        const maybeError = (data as Record<string, unknown>).error;
+        if (typeof maybeError === 'string') return maybeError;
     }
     return `Request failed (${status})`;
 }

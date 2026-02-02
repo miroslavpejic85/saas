@@ -1,4 +1,3 @@
-import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
 import { ENV } from '@/server/config/env';
@@ -48,7 +47,7 @@ export async function POST(request: Request) {
             .insert({ id: event.id, type: event.type });
 
         if (insertError) {
-            if (String((insertError as any).code) !== '23505') {
+            if (insertError.code !== '23505') {
                 console.error('stripe_webhook_events insert failed', insertError);
                 return jsonError('Webhook storage error', 500);
             }
