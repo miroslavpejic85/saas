@@ -1,6 +1,6 @@
 {
     "name": "supabase-stripe-nodejs-app",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "private": true,
     "type": "module",
     "description": "Node.js + Supabase Auth (email OTP) + Stripe Checkout + protected page",
