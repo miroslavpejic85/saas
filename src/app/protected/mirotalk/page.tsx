@@ -7,7 +7,7 @@ export default function MiroTalkPage() {
         <iframe
             id="mirotalkIframe"
             title="MiroTalk"
-            allow="camera; microphone; display-capture; fullscreen; clipboard-read; clipboard-write; web-share; autoplay"
+            allow="camera; microphone; speaker-selection; display-capture; fullscreen; clipboard-read; clipboard-write; web-share; autoplay; encrypted-media; picture-in-picture"
             src={iframeSrc}
             style={{ height: '100vh', width: '100vw', border: 0 }}
         />
